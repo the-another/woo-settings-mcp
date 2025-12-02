@@ -1,3 +1,14 @@
+# 1.0.0 (2025-12-02)
+
+
+### Bug Fixes
+
+* github CI rules triggers ([5092f5d](https://github.com/the-another/woo-settings-mcp/commit/5092f5d14bcca6a64741b0224eff18b3c2ec0b79))
+* github CI rules triggers and rules ([de5b167](https://github.com/the-another/woo-settings-mcp/commit/de5b1679e83bc16dbb5965b2466b4a3cac5d4c8e))
+* github CI tests, rules and triggers ([2774ceb](https://github.com/the-another/woo-settings-mcp/commit/2774ceb6d58f1ff84cb50aae824afd2fa01c3402))
+* github release flow ([29f0330](https://github.com/the-another/woo-settings-mcp/commit/29f0330b62ce540943bdcefe55814368ea786ce8))
+* github release flow ([#3](https://github.com/the-another/woo-settings-mcp/issues/3)) ([c34c7a3](https://github.com/the-another/woo-settings-mcp/commit/c34c7a36a1699556dac750f9ffc22cfa4276a0a3))
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
@@ -17,4 +28,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - PHPUnit tests with Brain Monkey
 - PHPStan level 8 static analysis
 - WordPress Coding Standards compliance
-
