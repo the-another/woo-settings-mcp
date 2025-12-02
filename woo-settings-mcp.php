@@ -4,7 +4,7 @@
  * Plugin URI: https://github.com/the-another/woo-settings-mcp
  * Description: Exposes WooCommerce general settings via MCP (Model Context Protocol) for LLM integration.
  * Author: Nemanja Cimbaljevic <wpcimba@pm.me>
- * Version: 1.0.1
+ * Version: 1.0.2
  * Author URI: https://cimba.blog/
  * Requires at least: 6.0
  * Requires PHP: 8.0
@@ -27,7 +27,7 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 // Define plugin constants.
-define( 'WOO_SETTINGS_MCP_VERSION', '1.0.1' );
+define( 'WOO_SETTINGS_MCP_VERSION', '1.0.2' );
 define( 'WOO_SETTINGS_MCP_FILE', __FILE__ );
 define( 'WOO_SETTINGS_MCP_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WOO_SETTINGS_MCP_URL', plugin_dir_url( __FILE__ ) );

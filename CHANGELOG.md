@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/the-another/woo-settings-mcp/compare/v1.0.1...v1.0.2) (2025-12-02)
+
+
+### Bug Fixes
+
+* github release flow ([#4](https://github.com/the-another/woo-settings-mcp/issues/4)) ([a8f7238](https://github.com/the-another/woo-settings-mcp/commit/a8f72385cda60d9b430c08e148038075be4b2848))
+
 ## [1.0.1](https://github.com/the-another/woo-settings-mcp/compare/v1.0.0...v1.0.1) (2025-12-02)
 
 
