@@ -4,7 +4,7 @@ on:
   push:
     branches: [develop]
   pull_request:
-    branches: [develop, master]
+    branches: [develop]
 
 jobs:
   test:
@@ -103,4 +103,3 @@ jobs:
 
       - name: Run PHPStan
         run: ./vendor/bin/phpstan analyse --memory-limit=1G --error-format=github
-
