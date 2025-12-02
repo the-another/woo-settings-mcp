@@ -72,7 +72,7 @@ jobs:
         run: composer install --prefer-dist --no-progress
 
       - name: Run PHPCS
-        run: composer phpcs -- --report=checkstyle | cs2pr
+        run: ./vendor/bin/phpcs --report=checkstyle -q | cs2pr
 
   phpstan:
     name: PHPStan
