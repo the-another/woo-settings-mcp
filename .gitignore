@@ -1,6 +1,6 @@
 # Dependencies
 /vendor/
-/vendor_prefixed/
+/includes/Dependencies/
 /node_modules/
 
 # PHPUnit

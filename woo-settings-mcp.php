@@ -33,8 +33,8 @@ define( 'WOO_SETTINGS_MCP_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WOO_SETTINGS_MCP_URL', plugin_dir_url( __FILE__ ) );
 
 // Autoloader for prefixed dependencies (Mozart).
-if ( file_exists( WOO_SETTINGS_MCP_PATH . 'vendor_prefixed/autoload.php' ) ) {
-	require_once WOO_SETTINGS_MCP_PATH . 'vendor_prefixed/autoload.php';
+if ( file_exists( WOO_SETTINGS_MCP_PATH . 'includes/Dependencies/autoload.php' ) ) {
+	require_once WOO_SETTINGS_MCP_PATH . 'includes/Dependencies/autoload.php';
 }
 
 // Autoloader for plugin classes.

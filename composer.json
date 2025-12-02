@@ -41,20 +41,20 @@
         "phpstan": "phpstan analyse",
         "test": "phpunit",
         "test:coverage": "phpunit --coverage-html coverage",
-        "mozart": "mozart compose",
+        "mozart": "@php vendor/bin/mozart compose",
         "post-install-cmd": [
-            "@mozart"
+            "@php -r \"if(file_exists('vendor/bin/mozart')){passthru('composer mozart');}\""
         ],
         "post-update-cmd": [
-            "@mozart"
+            "@php -r \"if(file_exists('vendor/bin/mozart')){passthru('composer mozart');}\""
         ]
     },
     "extra": {
         "mozart": {
-            "dep_namespace": "Another\\Plugin\\Woo_Settings_MCP\\Vendor\\",
-            "dep_directory": "/vendor_prefixed/",
-            "classmap_directory": "/vendor_prefixed/classes/",
-            "classmap_prefix": "WooSettingsMCP_",
+            "dep_namespace": "Another\\Plugin\\Woo_Settings_MCP\\Dependencies\\",
+            "dep_directory": "/includes/Dependencies/",
+            "classmap_directory": "/includes/Dependencies/classes/",
+            "classmap_prefix": "Woo_Settings_MCP_",
             "packages": [],
             "excluded_packages": [],
             "override_autoload": {}

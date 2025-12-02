@@ -110,21 +110,44 @@ jobs:
           restore-keys: ${{ runner.os }}-composer-build-
 
       - name: Install all dependencies (including Mozart)
-        run: composer install --prefer-dist --no-progress
+        run: composer install --prefer-dist --no-progress --no-scripts
 
       - name: Run Mozart to prefix dependencies
-        run: composer mozart
-
-      - name: Remove dev dependencies
-        run: composer install --prefer-dist --no-progress --no-dev --optimize-autoloader
-
-      - name: Verify vendor_prefixed exists
         run: |
-          if [ -d "vendor_prefixed" ]; then
-            echo "vendor_prefixed directory exists"
-            ls -la vendor_prefixed/
+          echo "Running Mozart to prefix production dependencies..."
+          ./vendor/bin/mozart compose
+          echo "Mozart completed"
+
+      - name: Dump optimized autoloader with prefixed dependencies
+        run: composer dump-autoload --optimize
+
+      - name: Remove dev dependencies (keeping vendor_prefixed intact)
+        run: |
+          # Remove dev dependencies without running scripts (Mozart already ran)
+          composer install --prefer-dist --no-progress --no-dev --no-scripts --optimize-autoloader
+
+      - name: Verify build artifacts
+        run: |
+          echo "=== Checking includes/Dependencies directory ==="
+          if [ -d "includes/Dependencies" ] && [ "$(ls -A includes/Dependencies 2>/dev/null)" ]; then
+            echo "✓ includes/Dependencies directory exists with contents:"
+            ls -la includes/Dependencies/
           else
-            echo "Warning: vendor_prefixed directory not found"
+            echo "ℹ includes/Dependencies is empty (no production dependencies to prefix)"
+          fi
+          
+          echo ""
+          echo "=== Checking vendor directory ==="
+          echo "Composer autoloader files:"
+          ls -la vendor/composer/
+          
+          echo ""
+          echo "=== Checking autoload files ==="
+          if [ -f "vendor/autoload.php" ]; then
+            echo "✓ vendor/autoload.php exists"
+          else
+            echo "✗ vendor/autoload.php missing!"
+            exit 1
           fi
 
       - name: Create plugin archive
@@ -133,10 +156,9 @@ jobs:
           # Create a clean directory for the plugin
           mkdir -p build/woo-settings-mcp
           
-          # Copy plugin files
+          # Copy plugin files (includes/ already contains Dependencies/ from Mozart)
           cp -r includes build/woo-settings-mcp/
           cp -r vendor build/woo-settings-mcp/
-          cp -r vendor_prefixed build/woo-settings-mcp/ 2>/dev/null || true
           cp woo-settings-mcp.php build/woo-settings-mcp/
           cp composer.json build/woo-settings-mcp/
           cp README.md build/woo-settings-mcp/
