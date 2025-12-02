@@ -99,9 +99,23 @@ class SettingsValidationTest extends \WooSettingsMCP_TestCase {
 	 * @return void
 	 */
 	public function test_validate_country_codes_empty_array(): void {
+		$handler = new class() extends Settings_Handler {
+			/**
+			 * Override get_countries for testing.
+			 *
+			 * @return array<string, string>
+			 */
+			public function get_countries(): array {
+				return array(
+					'US' => 'United States',
+					'CA' => 'Canada',
+				);
+			}
+		};
+
 		Functions\when( 'update_option' )->justReturn( true );
 
-		$result = $this->handler->update_setting( 'woocommerce_specific_allowed_countries', array() );
+		$result = $handler->update_setting( 'woocommerce_specific_allowed_countries', array() );
 		$this->assertTrue( $result['success'] );
 	}
 
