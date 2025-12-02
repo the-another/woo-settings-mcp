@@ -1,9 +1,13 @@
 name: Release
 
 on:
-  push:
-    branches:
-      - master
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (no actual release)'
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: write
@@ -14,11 +18,17 @@ jobs:
     name: Semantic Release
     runs-on: ubuntu-latest
 
+    outputs:
+      new_release_published: ${{ steps.semantic.outputs.new_release_published }}
+      new_release_version: ${{ steps.semantic.outputs.new_release_version }}
+      new_release_git_tag: ${{ steps.semantic.outputs.new_release_git_tag }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: develop
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup PHP
@@ -64,34 +74,45 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Semantic Release
+        id: semantic
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release
+        run: |
+          if [ "${{ inputs.dry_run }}" == "true" ]; then
+            npx semantic-release --dry-run
+          else
+            npx semantic-release
+          fi
+
+      - name: Push to master
+        if: steps.semantic.outputs.new_release_published == 'true' && inputs.dry_run != true
+        run: |
+          TAG="${{ steps.semantic.outputs.new_release_git_tag }}"
+          echo "Pushing release ${TAG} to master..."
+          
+          # Fetch the tag that semantic-release created and pushed
+          git fetch origin --tags
+          
+          # Get the commit SHA that the tag points to
+          RELEASE_COMMIT=$(git rev-list -n 1 "${TAG}")
+          echo "Release commit: ${RELEASE_COMMIT}"
+          
+          # Push the exact release commit to master
+          # This guarantees we push the versioned commit, not a potentially stale local state
+          git push origin "${RELEASE_COMMIT}:refs/heads/master" --force
 
   build:
     name: Build Plugin
     runs-on: ubuntu-latest
     needs: release
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: needs.release.outputs.new_release_published == 'true'
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: master  # Get latest code after release commit
-
-      - name: Pull latest changes
-        run: git pull origin master
-
-      - name: Get latest tag
-        id: get_tag
-        run: |
-          git fetch --tags
-          TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
-          VERSION=${TAG#v}  # Remove 'v' prefix for version number
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          ref: ${{ needs.release.outputs.new_release_git_tag }}
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -166,7 +187,7 @@ jobs:
           
           # Create the zip from the build directory
           cd build
-          zip -r ../dist/woo-settings-mcp-${{ steps.get_tag.outputs.tag }}.zip woo-settings-mcp
+          zip -r ../dist/woo-settings-mcp-${{ needs.release.outputs.new_release_git_tag }}.zip woo-settings-mcp
           cd ..
           
           # Cleanup
@@ -175,14 +196,13 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: woo-settings-mcp-${{ steps.get_tag.outputs.tag }}
-          path: dist/woo-settings-mcp-${{ steps.get_tag.outputs.tag }}.zip
+          name: woo-settings-mcp-${{ needs.release.outputs.new_release_git_tag }}
+          path: dist/woo-settings-mcp-${{ needs.release.outputs.new_release_git_tag }}.zip
 
       - name: Upload to Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ steps.get_tag.outputs.tag }}
-          files: dist/woo-settings-mcp-${{ steps.get_tag.outputs.tag }}.zip
+          tag_name: ${{ needs.release.outputs.new_release_git_tag }}
+          files: dist/woo-settings-mcp-${{ needs.release.outputs.new_release_git_tag }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
