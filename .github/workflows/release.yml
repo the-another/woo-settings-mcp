@@ -1,0 +1,166 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release:
+    name: Semantic Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install semantic-release
+        run: |
+          npm install -g semantic-release @semantic-release/changelog @semantic-release/git @semantic-release/exec
+
+      - name: Get Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: Run tests
+        run: composer test
+
+      - name: Run PHPCS
+        run: composer phpcs
+
+      - name: Run PHPStan
+        run: ./vendor/bin/phpstan analyse --memory-limit=1G
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Semantic Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
+
+  build:
+    name: Build Plugin
+    runs-on: ubuntu-latest
+    needs: release
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main  # Get latest code after release commit
+
+      - name: Pull latest changes
+        run: git pull origin main
+
+      - name: Get latest tag
+        id: get_tag
+        run: |
+          git fetch --tags
+          TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
+          VERSION=${TAG#v}  # Remove 'v' prefix for version number
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+
+      - name: Get Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-build-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-build-
+
+      - name: Install all dependencies (including Mozart)
+        run: composer install --prefer-dist --no-progress
+
+      - name: Run Mozart to prefix dependencies
+        run: composer mozart
+
+      - name: Remove dev dependencies
+        run: composer install --prefer-dist --no-progress --no-dev --optimize-autoloader
+
+      - name: Verify vendor_prefixed exists
+        run: |
+          if [ -d "vendor_prefixed" ]; then
+            echo "vendor_prefixed directory exists"
+            ls -la vendor_prefixed/
+          else
+            echo "Warning: vendor_prefixed directory not found"
+          fi
+
+      - name: Create plugin archive
+        run: |
+          mkdir -p dist
+          # Create a clean directory for the plugin
+          mkdir -p build/woo-settings-mcp
+          
+          # Copy plugin files
+          cp -r includes build/woo-settings-mcp/
+          cp -r vendor build/woo-settings-mcp/
+          cp -r vendor_prefixed build/woo-settings-mcp/ 2>/dev/null || true
+          cp woo-settings-mcp.php build/woo-settings-mcp/
+          cp composer.json build/woo-settings-mcp/
+          cp README.md build/woo-settings-mcp/
+          cp CHANGELOG.md build/woo-settings-mcp/
+          
+          # Create the zip from the build directory
+          cd build
+          zip -r ../dist/woo-settings-mcp-${{ steps.get_tag.outputs.tag }}.zip woo-settings-mcp
+          cd ..
+          
+          # Cleanup
+          rm -rf build
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: woo-settings-mcp-${{ steps.get_tag.outputs.tag }}
+          path: dist/woo-settings-mcp-${{ steps.get_tag.outputs.tag }}.zip
+
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.get_tag.outputs.tag }}
+          files: dist/woo-settings-mcp-${{ steps.get_tag.outputs.tag }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

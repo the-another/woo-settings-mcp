@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.6/phpunit.xsd"
+    bootstrap="tests/bootstrap.php"
+    colors="true"
+    cacheResultFile=".phpunit.cache/test-results"
+    executionOrder="depends,defects"
+    beStrictAboutOutputDuringTests="true"
+    failOnRisky="true"
+    failOnWarning="true"
+>
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>tests/unit</directory>
+        </testsuite>
+    </testsuites>
+
+    <coverage>
+        <include>
+            <directory suffix=".php">includes</directory>
+        </include>
+        <exclude>
+            <directory>vendor</directory>
+            <directory>vendor_prefixed</directory>
+        </exclude>
+        <report>
+            <clover outputFile="coverage/clover.xml"/>
+            <html outputDirectory="coverage/html"/>
+            <text outputFile="coverage/coverage.txt"/>
+        </report>
+    </coverage>
+
+    <php>
+        <const name="WOO_SETTINGS_MCP_VERSION" value="1.0.0"/>
+        <const name="WOO_SETTINGS_MCP_FILE" value="/path/to/plugin.php"/>
+        <const name="WOO_SETTINGS_MCP_PATH" value="/path/to/"/>
+        <const name="WOO_SETTINGS_MCP_URL" value="http://example.com/"/>
+    </php>
+</phpunit>
+

@@ -1,0 +1,32 @@
+# Dependencies
+/vendor/
+/vendor_prefixed/
+/node_modules/
+
+# PHPUnit
+.phpunit.cache/
+/coverage/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+/build/
+/dist/
+*.zip
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.local
+

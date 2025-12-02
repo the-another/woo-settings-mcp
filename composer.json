@@ -1,0 +1,70 @@
+{
+    "name": "another/woo-settings-mcp",
+    "description": "WordPress plugin exposing WooCommerce settings via MCP (Model Context Protocol)",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "authors": [
+        {
+            "name": "Nemanja Cimbaljevic",
+            "email": "wpcimba@pm.me"
+        }
+    ],
+    "require": {
+        "php": "^8.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.6",
+        "brain/monkey": "^2.6",
+        "mockery/mockery": "^1.6",
+        "wp-coding-standards/wpcs": "^3.0",
+        "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+        "phpstan/phpstan": "^1.10",
+        "szepeviktor/phpstan-wordpress": "^1.3",
+        "php-stubs/wordpress-stubs": "^6.4",
+        "php-stubs/woocommerce-stubs": "^8.0",
+        "coenjacobs/mozart": "^0.7",
+        "yoast/phpunit-polyfills": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Another\\Plugin\\Woo_Settings_MCP\\": "includes/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Another\\Plugin\\Woo_Settings_MCP\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "phpcs": "phpcs",
+        "phpcbf": "phpcbf",
+        "phpstan": "phpstan analyse",
+        "test": "phpunit",
+        "test:coverage": "phpunit --coverage-html coverage",
+        "mozart": "mozart compose",
+        "post-install-cmd": [
+            "@mozart"
+        ],
+        "post-update-cmd": [
+            "@mozart"
+        ]
+    },
+    "extra": {
+        "mozart": {
+            "dep_namespace": "Another\\Plugin\\Woo_Settings_MCP\\Vendor\\",
+            "dep_directory": "/vendor_prefixed/",
+            "classmap_directory": "/vendor_prefixed/classes/",
+            "classmap_prefix": "WooSettingsMCP_",
+            "packages": [],
+            "excluded_packages": [],
+            "override_autoload": {}
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        },
+        "sort-packages": true
+    }
+}
+
